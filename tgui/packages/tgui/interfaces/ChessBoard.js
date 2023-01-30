@@ -9,8 +9,6 @@ export const ChessBoard = (props, context) => {
     <Window width={720} height={950}>
       <Window.Content scrollable>
         <WhiteChessPieces />
-        <ChessBoardContent />
-        <BlackChessPieces />
       </Window.Content>
     </Window>
   );
@@ -23,6 +21,8 @@ const WhiteChessPieces = (props, context) => {
   const {
     chess_pieces, selected,
   } = data;
+  // Check if there is selected
+  const select = (selected === null) ? 0 : selected.id;
   // Filter White Pieces
   const filtered_chess_pieces = chess_pieces.filter(piece => piece.color === "white");
   // Filter Pieces in Play
@@ -33,12 +33,19 @@ const WhiteChessPieces = (props, context) => {
         {white_chess_pieces.map((piece) => (
           <Flex.Item key={piece.id}>
             <Button
-            backgroundColor={selected[0][0].id === piece.id ? "green" : "gray"}
+            backgroundColor={select === piece.id ? "green" : "gray"}
             textColor="white"
             m="2px"
             content={piece.color + " " + piece.name}
             icon={"fa-solid fa-chess-" + piece.name}
-            onClick={() => act("Select", { piece })} />
+            onClick={() => act("Select", {
+               name : piece.name,
+               color : piece.color,
+               id : piece.id,
+               played : piece.played,
+               xposition : piece.xposition,
+               yposition : piece.yposition,
+               })} />
           </Flex.Item>
         ))}
       </Flex>
@@ -53,6 +60,8 @@ const BlackChessPieces = (props, context) => {
   const {
     chess_pieces, selected,
   } = data;
+  // Check if there is selected
+  const select = (selected === null) ? 0 : selected.id;
   // Filter Black Pieces
   const filtered_chess_pieces = chess_pieces.filter(piece => piece.color === "black");
   // Filter Pieces in Play
@@ -63,7 +72,7 @@ const BlackChessPieces = (props, context) => {
         {black_chess_pieces.map((piece, index) => (
           <Flex.Item key={index}>
             <Button
-            backgroundColor={selected[0][0].id === piece.id ? "green" : "gray"}
+            backgroundColor={select === piece.id ? "green" : "gray"}
             textColor="black"
             m="2px"
             content={piece.color + " " + piece.name}
@@ -92,19 +101,19 @@ const GenerateRows = (props, context) => {
 
 const GenerateCell = (data, act, index, xpos, ypos) => {
   // for generating the mirrored tile
-  const color = index % 2 === 1 ? "#564424" : "#ad9264";
+  const backgroundcolor = index % 2 === 1 ? "#564424" : "#ad9264";
   // for checking if the tile has a chess piece on it
+  // filters only the played pieces
   const chess_piece_in_play = data.chess_pieces.filter(piece => piece.played === 1);
+  // gets the one in the cells position
   const chess_piece_to_gen = chess_piece_in_play.find(piece => piece.xposition === xpos && piece.yposition === ypos);
   return (
   <Table.Cell
-  backgroundColor={color}
+  backgroundColor={backgroundcolor}
   height="8vh"
   width="8vw"
-  textColor={chess_piece_to_gen.color} // Delete After
-  icon={"fa-solid fa-chess-" + chess_piece_to_gen.name}
   onClick={() => act("Place", { xposition : xpos, yposition : ypos })} >
-    {xpos + " " + ypos + " remove later"}
+    {xpos + " " + ypos}
   </Table.Cell>
   );
 };

@@ -20,12 +20,12 @@
 	w_class = SIZE_MEDIUM
 	has_special_table_placement = TRUE
 
-	/// Determines what is to be moved
-	var/selected_piece;
 	/// Unused for now
 	var/max_pieces = 64
 	/// Chess pieces on the board
 	var/list/chess_pieces = list()
+	/// Determines what is to be moved
+	var/selected_piece = list();
 
 	/// Testing, Remove once finished
 	var/TestValue = 0
@@ -87,7 +87,7 @@
 
 /obj/item/toy/board/ui_data(mob/user)
 	var/list/data = list()
-	data["selected"] = selected_piece
+	data["selected"] = list(selected_piece)
 	data["chess_pieces"] = list()
 
 	// Send the chess pieces data that is on the board
@@ -116,13 +116,18 @@
 			TestValue += 1
 			. = TRUE
 		if("Select")
-			selected_piece = params
-
 			if(params["id"] == selected_piece["id"])
 				selected_piece = list()
 				to_chat(usr, SPAN_WARNING("You take the chess piece"))
 				// Insert Action to Grab Chess piece to hand
+				return . = TRUE
 
+			selected_piece["name"] = params["name"]
+			selected_piece["color"] = params["color"]
+			selected_piece["id"] = params["id"]
+			selected_piece["played"] = params["played"]
+			selected_piece["xposition"] = params["xposition"]
+			selected_piece["yposition"] = params["yposition"]
 			. = TRUE
 		if("Place")
 			// Position relative to the chess board
@@ -130,13 +135,12 @@
 			var/yposition = text2num(params["yposition"])
 
 			// No Chess Piece was selected
-			if(!selected_piece)
-				to_chat(usr, SPAN_WARNING("Select a Chess Piece to move"))
-				return . = TRUE
-			else
+			if(selected_piece)
 				var/selected_id = selected_piece["id"]-1
 				chess_pieces[selected_id]["played"] = TRUE
 				chess_pieces[selected_id]["xposition"] = xposition
 				chess_pieces[selected_id]["yposition"] = yposition
-
-			. = TRUE
+				. = TRUE
+			else
+				to_chat(usr, SPAN_WARNING("Select a Chess Piece to move"))
+				. = TRUE
