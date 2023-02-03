@@ -9,24 +9,35 @@ export const ChessBoard = (props, context) => {
     <Window width={720} height={950}>
       <Window.Content scrollable>
         <WhiteChessPieces />
+        <ChessBoardContent />
+        <BlackChessPieces />
       </Window.Content>
     </Window>
   );
 };
 
+  () => act("Select", {
+    name : piece.name,
+    color : piece.color,
+    id : piece.id,
+    played : piece.played,
+    xposition : piece.xposition,
+    yposition : piece.yposition,
+    });
+
 // Generate White Pieces
 const WhiteChessPieces = (props, context) => {
-  let color;
   const { act, data } = useBackend(context);
   const {
     chess_pieces, selected,
   } = data;
   // Check if there is selected
-  const select = (selected === null) ? 0 : selected.id;
+  const select = (selected === null) ? 0 : selected[0].id;
   // Filter White Pieces
   const filtered_chess_pieces = chess_pieces.filter(piece => piece.color === "white");
   // Filter Pieces in Play
   const white_chess_pieces = filtered_chess_pieces.filter(piece => piece.played === 0);
+
   return (
     <Section title="White Chess Pieces">
       <Flex wrap="wrap" align="center" justify="space-evenly">
@@ -39,13 +50,13 @@ const WhiteChessPieces = (props, context) => {
             content={piece.color + " " + piece.name}
             icon={"fa-solid fa-chess-" + piece.name}
             onClick={() => act("Select", {
-               name : piece.name,
-               color : piece.color,
-               id : piece.id,
-               played : piece.played,
-               xposition : piece.xposition,
-               yposition : piece.yposition,
-               })} />
+              name : piece.name,
+              color : piece.color,
+              id : piece.id,
+              played : piece.played,
+              xposition : piece.xposition,
+              yposition : piece.yposition,
+              })} />
           </Flex.Item>
         ))}
       </Flex>
@@ -61,7 +72,7 @@ const BlackChessPieces = (props, context) => {
     chess_pieces, selected,
   } = data;
   // Check if there is selected
-  const select = (selected === null) ? 0 : selected.id;
+  const select = (selected === null) ? 0 : selected[0].id;
   // Filter Black Pieces
   const filtered_chess_pieces = chess_pieces.filter(piece => piece.color === "black");
   // Filter Pieces in Play
@@ -77,10 +88,26 @@ const BlackChessPieces = (props, context) => {
             m="2px"
             content={piece.color + " " + piece.name}
             icon={"fa-solid fa-chess-" + piece.name}
-            onClick={() => act("Select", { piece })} />
+            onClick={() => act("Select", {
+              name : piece.name,
+              color : piece.color,
+              id : piece.id,
+              played : piece.played,
+              xposition : piece.xposition,
+              yposition : piece.yposition,
+              })} />
           </Flex.Item>
         ))}
       </Flex>
+    </Section>
+  );
+};
+
+const ChessBoardContent = (props, context) => {
+  // Front End
+  return (
+    <Section title="Chess Board">
+      <GenerateRows />
     </Section>
   );
 };
@@ -106,30 +133,29 @@ const GenerateCell = (data, act, index, xpos, ypos) => {
   // filters only the played pieces
   const chess_piece_in_play = data.chess_pieces.filter(piece => piece.played === 1);
   // gets the one in the cells position
-  const chess_piece_to_gen = chess_piece_in_play.find(piece => piece.xposition === xpos && piece.yposition === ypos);
-  return (
+  const chess_piece_to_gen = chess_piece_in_play.findIndex(piece => piece.xposition === xpos && piece.yposition === ypos);
+  return (chess_piece_to_gen === -1 ?
+  <Table.Cell
+  backgroundColor={backgroundcolor}
+  height="8vh"
+  width="8vw"
+  onClick={() => act("Place", { xposition : xpos, yposition : ypos })} />
+  :
   <Table.Cell
   backgroundColor={backgroundcolor}
   height="8vh"
   width="8vw"
   onClick={() => act("Place", { xposition : xpos, yposition : ypos })} >
-    {xpos + " " + ypos}
+    <Button icon={"fa-solid fa-chess-" + chess_piece_in_play[chess_piece_to_gen].name}
+    textColor={chess_piece_in_play[chess_piece_to_gen].color}
+    fontSize="3em"
+    height="100%"
+    width="100%"
+    textAlign="center"
+    verticalAlignContent="middle"
+    backgroundColor="transparent"
+    m="0"
+    p="0" />
   </Table.Cell>
-  );
-};
-
-const ChessBoardContent = (props, context) => {
-  const { act, data } = useBackend(context);
-  const {
-    health,
-  } = data;
-  // Front End
-  return (
-    <Section title="Chess Board">
-      <GenerateRows />
-      <Button
-          content={health}
-          backgroundColor="red" />
-    </Section>
   );
 };

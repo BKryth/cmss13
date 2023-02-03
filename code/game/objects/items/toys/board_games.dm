@@ -23,7 +23,7 @@
 	/// Unused for now
 	var/max_pieces = 64
 	/// Chess pieces on the board
-	var/list/chess_pieces = list()
+	var/list/datum/chess_piece/chess_pieces = list()
 	/// Determines what is to be moved
 	var/selected_piece = list();
 
@@ -135,11 +135,11 @@
 			var/yposition = text2num(params["yposition"])
 
 			// No Chess Piece was selected
-			if(selected_piece)
-				var/selected_id = selected_piece["id"]-1
-				chess_pieces[selected_id]["played"] = TRUE
-				chess_pieces[selected_id]["xposition"] = xposition
-				chess_pieces[selected_id]["yposition"] = yposition
+			if(length(selected_piece))
+				var/selected_id = selected_piece["id"]
+				chess_pieces[selected_id].played = TRUE
+				chess_pieces[selected_id].board_x_pos = xposition
+				chess_pieces[selected_id].board_y_pos = yposition
 				. = TRUE
 			else
 				to_chat(usr, SPAN_WARNING("Select a Chess Piece to move"))
