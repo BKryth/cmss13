@@ -1,6 +1,7 @@
 import { useBackend } from '../backend';
 import { Button, Section, Flex, Table } from '../components';
 import { Window } from '../layouts';
+import { useRef }from 'common/react';
 
 const row = [0, 1, 2, 3, 4, 5, 6, 7];
 
@@ -11,19 +12,41 @@ export const ChessBoard = (props, context) => {
         <WhiteChessPieces />
         <ChessBoardContent />
         <BlackChessPieces />
+        <Test />
+        <TestButton />
       </Window.Content>
     </Window>
   );
 };
 
-  () => act("Select", {
-    name : piece.name,
-    color : piece.color,
-    id : piece.id,
-    played : piece.played,
-    xposition : piece.xposition,
-    yposition : piece.yposition,
-    });
+const Test = () => {
+  const ref = useRef();
+  const handleClick = () => {
+    const element = document.getElementById("testID");
+    element.style.content = "Testing";
+    const element2 = ref.current;
+  };
+  return (
+    <Button
+    ref={ref}
+    id="testID"
+    content="TestButton"
+    onClick={handleClick} />
+  );
+};
+
+const TestButton = () => {
+  const changeColor = (event) => {
+    Reac.createRef();
+  };
+  return (
+    <Button
+    id="testID"
+    content="Change TestButton Color"
+    onClick={changeColor} />
+  );
+};
+
 
 // Generate White Pieces
 const WhiteChessPieces = (props, context) => {
@@ -40,7 +63,10 @@ const WhiteChessPieces = (props, context) => {
 
   return (
     <Section title="White Chess Pieces">
-      <Flex wrap="wrap" align="center" justify="space-evenly">
+      <Flex wrap="wrap" align="center" justify="space-evenly"
+      onClick={() => act("Reset", {
+        id : select,
+      })}>
         {white_chess_pieces.map((piece) => (
           <Flex.Item key={piece.id}>
             <Button
@@ -79,7 +105,11 @@ const BlackChessPieces = (props, context) => {
   const black_chess_pieces = filtered_chess_pieces.filter(piece => piece.played === 0);
   return (
     <Section title="Black Chess Pieces">
-      <Flex wrap="wrap" align="center" justify="space-evenly">
+      <Flex wrap="wrap" align="center" justify="space-evenly"
+      minHeight="4vh"
+      onClick={() => act("Reset", {
+          id : select,
+        })}>
         {black_chess_pieces.map((piece, index) => (
           <Flex.Item key={index}>
             <Button
@@ -127,6 +157,8 @@ const GenerateRows = (props, context) => {
 };
 
 const GenerateCell = (data, act, index, xpos, ypos) => {
+  // for getting the selected piece
+  const select = (data.selected === null) ? 0 : data.selected[0].id;
   // for generating the mirrored tile
   const backgroundcolor = index % 2 === 1 ? "#564424" : "#ad9264";
   // for checking if the tile has a chess piece on it
@@ -135,27 +167,36 @@ const GenerateCell = (data, act, index, xpos, ypos) => {
   // gets the one in the cells position
   const chess_piece_to_gen = chess_piece_in_play.findIndex(piece => piece.xposition === xpos && piece.yposition === ypos);
   return (chess_piece_to_gen === -1 ?
+  // No Piece on Tile, onClick will update X, Y Position
   <Table.Cell
   backgroundColor={backgroundcolor}
   height="8vh"
   width="8vw"
   onClick={() => act("Place", { xposition : xpos, yposition : ypos })} />
   :
+  // Piece on Tile, will Select the Tile
   <Table.Cell
-  backgroundColor={backgroundcolor}
+  backgroundColor={select === chess_piece_in_play[chess_piece_to_gen].id ? "green" : backgroundcolor}
   height="8vh"
-  width="8vw"
-  onClick={() => act("Place", { xposition : xpos, yposition : ypos })} >
+  width="8vw">
     <Button icon={"fa-solid fa-chess-" + chess_piece_in_play[chess_piece_to_gen].name}
     textColor={chess_piece_in_play[chess_piece_to_gen].color}
-    fontSize="3em"
+    fontSize="4vh"
     height="100%"
     width="100%"
     textAlign="center"
     verticalAlignContent="middle"
     backgroundColor="transparent"
     m="0"
-    p="0" />
+    p="0"
+    onClick={() => act("Select", {
+      name : chess_piece_in_play[chess_piece_to_gen].name,
+      color : chess_piece_in_play[chess_piece_to_gen].color,
+      id : chess_piece_in_play[chess_piece_to_gen].id,
+      played : chess_piece_in_play[chess_piece_to_gen].played,
+      xposition : chess_piece_in_play[chess_piece_to_gen].xposition,
+      yposition : chess_piece_in_play[chess_piece_to_gen].yposition,
+      })} />
   </Table.Cell>
   );
 };

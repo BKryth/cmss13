@@ -116,31 +116,72 @@
 			TestValue += 1
 			. = TRUE
 		if("Select")
+			// Select it if none is selected
+			if(!length(selected_piece))
+				selected_piece["name"] = params["name"]
+				selected_piece["color"] = params["color"]
+				selected_piece["id"] = params["id"]
+				selected_piece["played"] = params["played"]
+				selected_piece["xposition"] = params["xposition"]
+				selected_piece["yposition"] = params["yposition"]
+				return . = TRUE
+
+			// Resets the selected list if piece is reselected
 			if(params["id"] == selected_piece["id"])
 				selected_piece = list()
 				to_chat(usr, SPAN_WARNING("You take the chess piece"))
 				// Insert Action to Grab Chess piece to hand
 				return . = TRUE
 
-			selected_piece["name"] = params["name"]
-			selected_piece["color"] = params["color"]
-			selected_piece["id"] = params["id"]
-			selected_piece["played"] = params["played"]
-			selected_piece["xposition"] = params["xposition"]
-			selected_piece["yposition"] = params["yposition"]
-			. = TRUE
+			// If clicked a chess piece while there is an existing selected, it replaces it
+			if(params["played"])
+				// id of to new piece on tile
+				var/selected_id = selected_piece["id"]
+				// id of to old piece from tile
+				var/replace_id = params["id"]
+				// give selected piece with updated placement
+				chess_pieces[selected_id].played = TRUE
+				chess_pieces[selected_id].board_x_pos = params["xposition"]
+				chess_pieces[selected_id].board_y_pos = params["yposition"]
+				// give old piece default placement
+				chess_pieces[replace_id].played = FALSE
+				chess_pieces[replace_id].board_x_pos = 0
+				chess_pieces[replace_id].board_y_pos = 0
+				selected_piece = list()
+				return . = TRUE
+			else
+				selected_piece["name"] = params["name"]
+				selected_piece["color"] = params["color"]
+				selected_piece["id"] = params["id"]
+				selected_piece["played"] = params["played"]
+				selected_piece["xposition"] = params["xposition"]
+				selected_piece["yposition"] = params["yposition"]
+				return . = TRUE
+
 		if("Place")
 			// Position relative to the chess board
 			var/xposition = text2num(params["xposition"])
 			var/yposition = text2num(params["yposition"])
 
-			// No Chess Piece was selected
+			// Chess Piece was selected
 			if(length(selected_piece))
 				var/selected_id = selected_piece["id"]
 				chess_pieces[selected_id].played = TRUE
 				chess_pieces[selected_id].board_x_pos = xposition
 				chess_pieces[selected_id].board_y_pos = yposition
+				selected_piece = list()
 				. = TRUE
 			else
 				to_chat(usr, SPAN_WARNING("Select a Chess Piece to move"))
 				. = TRUE
+
+		if("Reset")
+			// Code to reset when they click the area for pieces to sit on
+			if(!params["id"] == 0)
+			{
+				chess_pieces[params["id"]].played = FALSE
+				chess_pieces[params["id"]].board_x_pos = 0
+				chess_pieces[params["id"]].board_y_pos = 0
+				selected_piece = list()
+				return . = TRUE
+			}
